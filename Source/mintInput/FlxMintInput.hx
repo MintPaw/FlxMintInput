@@ -1,10 +1,11 @@
-package;
+package mintInput;
 
 import openfl.display.Stage;
+import openfl.events.KeyboardEvent;
 
-public class FlxMintInupt
+class FlxMintInput
 {
-	private var _stageRef:Stage;
+	private static var _stageRef:Stage;
 
 	public function new()
 	{
@@ -15,7 +16,23 @@ public class FlxMintInupt
 	{
 		_stageRef = stage;
 		
-		//_stageRef
+		addListeners();
+	}
+
+	private static function addListeners():Void
+	{
+		_stageRef.addEventListener(KeyboardEvent.KEY_DOWN, keyDownEvent);
+		_stageRef.addEventListener(KeyboardEvent.KEY_UP, keyUpEvent);
+	}
+
+	private static function keyDownEvent(e:KeyboardEvent):Void
+	{
+		
+	}
+
+	private static function keyUpEvent(e:KeyboardEvent):Void
+	{
+		
 	}
 
 }
