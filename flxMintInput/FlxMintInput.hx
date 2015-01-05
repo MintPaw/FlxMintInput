@@ -1,6 +1,5 @@
 package flxMintInput;
 
-import mintInput.FlxMintInputAction;
 import openfl.display.Stage;
 import openfl.events.Event;
 import openfl.events.JoystickEvent;
