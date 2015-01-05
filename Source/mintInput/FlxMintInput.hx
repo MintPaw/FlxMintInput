@@ -3,6 +3,7 @@ package mintInput;
 import mintInput.FlxMintInputAction;
 import openfl.display.Stage;
 import openfl.events.Event;
+import openfl.events.JoystickEvent;
 import openfl.events.KeyboardEvent;
 
 class FlxMintInput
@@ -22,6 +23,9 @@ class FlxMintInput
 
 	private static var _stateMap:Map<Int, Int>;
 	private static var _bindMap:Map<Int, Array<FlxMintInputAction>>;
+
+	private static var _joyAddFunction:Dynamic;
+	private static var _joyRemovedFunction:Dynamic;
 
 	public function new()
 	{
@@ -52,6 +56,16 @@ class FlxMintInput
 		_bindMap.get(action.key).push(action);
 	}
 
+	public static function bindJoyAdded(addFunction:Int->Void):Void
+	{
+		_joyAddFunction = addFunction;
+	}
+
+	public static function bindJoyRemoved(removeFunction:Int->Void):Void
+	{
+		_joyRemovedFunction = removeFunction;
+	}
+
 	public static function unbindAll():Void
 	{
 		for (i in keyMap)
@@ -65,6 +79,8 @@ class FlxMintInput
 	{
 		_stageRef.addEventListener(KeyboardEvent.KEY_DOWN, keyDownEvent);
 		_stageRef.addEventListener(KeyboardEvent.KEY_UP, keyUpEvent);
+		_stageRef.addEventListener(JoystickEvent.DEVICE_ADDED, joyAddedEvent);
+		_stageRef.addEventListener(JoystickEvent.DEVICE_REMOVED, joyRemovedEvent);
 		_stageRef.addEventListener(Event.ENTER_FRAME, update);
 	}
 
@@ -76,6 +92,18 @@ class FlxMintInput
 	private static function keyUpEvent(e:KeyboardEvent):Void
 	{
 		handleInput(e.keyCode, false);
+	}
+
+	private static function joyAddedEvent(e:JoystickEvent):Void
+	{
+		if (_joyAddFunction != null)
+			_joyAddFunction(e.device);
+	}
+
+	private static function joyRemovedEvent(e:JoystickEvent):Void
+	{
+		if (_joyRemovedFunction != null)
+			_joyRemovedFunction(e.device);
 	}
 
 	private static function update(e:Event):Void
@@ -97,6 +125,8 @@ class FlxMintInput
 
 	private static function handleInput(keyCode:Int, down:Bool):Void
 	{
+		if (_bindMap.get(keyCode) == null) _bindMap.set(keyCode, []);
+
 		var justDown:Bool = _stateMap.get(keyCode) == 0 && down;
 		var justUp:Bool = _stateMap.get(keyCode) == 1 && !down;
 
