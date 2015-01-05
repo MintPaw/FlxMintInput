@@ -1,4 +1,4 @@
-package mintInput;
+package;
 
 import mintInput.FlxMintInputAction;
 import openfl.display.Stage;

@@ -1,6 +1,5 @@
 package;
 
-import mintInput.FlxMintInput;
 import motion.Actuate;
 import openfl.display.Sprite;
 import openfl.events.Event;
