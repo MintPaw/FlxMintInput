@@ -21,7 +21,7 @@ class MintInput
 	private static var _stageRef:Stage;
 
 	private static var _stateMap:Map<Int, Int>;
-	private static var _bindMap:Map<Int, Array<FlxMintInputAction>>;
+	private static var _bindMap:Map<Int, Array<MintInputAction>>;
 
 	private static var _joyAddFunction:Dynamic;
 	private static var _joyRemovedFunction:Dynamic;
@@ -44,7 +44,7 @@ class MintInput
 
 	public static function bindToFunction(key:String, instance:Dynamic, functionName:String, arguments:Array<Dynamic>, fireCondition:Int):Void
 	{
-		var action:FlxMintInputAction = new FlxMintInputAction();
+		var action:MintInputAction = new MintInputAction();
 		action.key = keyMap.get(key);
 		action.actionType = FUNCTION_CALL;
 		action.instance = instance;
@@ -129,7 +129,7 @@ class MintInput
 		var justDown:Bool = _stateMap.get(keyCode) == 0 && down;
 		var justUp:Bool = _stateMap.get(keyCode) == 1 && !down;
 
-		var actions:Array<FlxMintInputAction> = _bindMap.get(keyCode);
+		var actions:Array<MintInputAction> = _bindMap.get(keyCode);
 
 		for (i in actions)
 		{
@@ -142,7 +142,7 @@ class MintInput
 		_stateMap.set(keyCode, down ? 1 : 0);
 	}
 
-	private static function fire(action:FlxMintInputAction):Void
+	private static function fire(action:MintInputAction):Void
 	{
 		Reflect.callMethod(action.instance, Reflect.field(action.instance, action.property), action.arguments);
 	}
