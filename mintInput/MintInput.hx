@@ -19,7 +19,7 @@ class MintInput
 
 	private static var _stateMap:Map<Int, Int>;
 	private static var _binds:Array<MintKey>;
-	//private static var _actionMap:Map<String, MintInputAction>;
+	private static var _actionMap:Map<String, Array<MintFunction>>;
 
 	private static var _joyAddFunction:Dynamic;
 	private static var _joyRemovedFunction:Dynamic;
@@ -34,6 +34,7 @@ class MintInput
 		_stageRef = stage;
 
 		_stateMap = new Map();
+		_actionMap = new Map();
 
 		unbindAll();
 		addListeners();
@@ -51,19 +52,16 @@ class MintInput
 
 	public static function bindKeyToAction(key:String, actionName:String, arguments:Array<Dynamic>, fireCondition:Int):Void
 	{
-		var action:MintInputAction = new MintInputAction();
-		action.key = keyMap.get(key);
-		action.actionType = BIND;
-		action.actionName = actionName;
-		action.arguments = arguments;
-		action.fireCondition = fireCondition;
+		var mintKey:MintKey = new MintKey(keyMap.get(key), fireCondition, arguments);
+		mintKey.actionName = actionName;
 
-		//_bindMap.get(action.key).push(action);
+		_binds.push(mintKey);
 	}
 
 	public static function bindActionToFunction(actionName:String, instance:Dynamic, functionName:String):Void
 	{
-
+		if (!_actionMap.exists(actionName)) _actionMap.set(actionName, []);
+		_actionMap.get(actionName).push(new MintFunction(instance, functionName));
 	}
 
 	public static function bindJoyAdded(addFunction:Int->Void):Void
@@ -143,8 +141,16 @@ class MintInput
 
 	private static function fire(key:MintKey):Void
 	{
-		if (key.mintFunction != null) key.mintFunction.call(key.arguments);
+		if (key.mintFunction != null) key.mintFunction.call(key.arguments) else fireAction(key.actionName, key.arguments);
+	}
 
+	private static function fireAction(actionName:String, params:Array<Dynamic>):Void
+	{
+		if (!_actionMap.exists(actionName)) return;
+		for (mintFunction in _actionMap.get(actionName))
+		{
+			mintFunction.call(params);
+		}
 	}
 
 	private static var keyMap:Map<String, Int> =

@@ -15,4 +15,9 @@ class MintFunction
 	{
 		Reflect.callMethod(instance, Reflect.field(instance, functionName), arguments);
 	}
+
+	public function toString():String
+	{
+		return "instance: " + instance + ", functionName: " + functionName;
+	}
 }
