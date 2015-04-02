@@ -1,11 +1,11 @@
-package flxMintInput;
+package mintInput;
 
 import openfl.display.Stage;
 import openfl.events.Event;
 import openfl.events.JoystickEvent;
 import openfl.events.KeyboardEvent;
 
-class FlxMintInput
+class MintInput
 {
 	public static var FUNCTION_CALL:Int = 0;
 	public static var FLIP:Int = 1;

@@ -1,6 +1,6 @@
-package flxMintInput;
+package mintInput;
 
-class FlxMintInputAction
+class MintInputAction
 {
 	public var key:Int;
 	public var actionType:Int;
