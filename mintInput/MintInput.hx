@@ -7,21 +7,19 @@ import openfl.events.KeyboardEvent;
 
 class MintInput
 {
-	public static var FUNCTION_CALL:Int = 0;
-	public static var FLIP:Int = 1;
-	public static var INCREMENT:Int = 2;
-	public static var DECREMENT:Int = 3;
-	public static var CUSTOM:Int = 4;
+	public static var BIND:Int = 0;
+	public static var FUNCTION_CALL:Int = 1;
 
-	public static var DOWN:Int = 5;
-	public static var UP:Int = 6;
-	public static var DOWN_ONCE:Int = 7;
-	public static var UP_ONCE:Int = 8;
+	public static var DOWN:Int = 2;
+	public static var UP:Int = 3;
+	public static var DOWN_ONCE:Int = 4;
+	public static var UP_ONCE:Int = 5;
 
 	private static var _stageRef:Stage;
 
 	private static var _stateMap:Map<Int, Int>;
-	private static var _bindMap:Map<Int, Array<MintInputAction>>;
+	private static var _binds:Array<MintKey>;
+	//private static var _actionMap:Map<String, MintInputAction>;
 
 	private static var _joyAddFunction:Dynamic;
 	private static var _joyRemovedFunction:Dynamic;
@@ -34,8 +32,7 @@ class MintInput
 	public static function init(stage:Stage):Void
 	{
 		_stageRef = stage;
-		
-		_bindMap = new Map();
+
 		_stateMap = new Map();
 
 		unbindAll();
@@ -44,15 +41,29 @@ class MintInput
 
 	public static function bindToFunction(key:String, instance:Dynamic, functionName:String, arguments:Array<Dynamic>, fireCondition:Int):Void
 	{
+		var mintKey:MintKey = new MintKey(keyMap.get(key), fireCondition, arguments);
+		var mintFunction:MintFunction = new MintFunction(instance, functionName);
+
+		mintKey.mintFunction = mintFunction;
+
+		_binds.push(mintKey);
+	}
+
+	public static function bindKeyToAction(key:String, actionName:String, arguments:Array<Dynamic>, fireCondition:Int):Void
+	{
 		var action:MintInputAction = new MintInputAction();
 		action.key = keyMap.get(key);
-		action.actionType = FUNCTION_CALL;
-		action.instance = instance;
-		action.property = functionName;
+		action.actionType = BIND;
+		action.actionName = actionName;
 		action.arguments = arguments;
 		action.fireCondition = fireCondition;
 
-		_bindMap.get(action.key).push(action);
+		//_bindMap.get(action.key).push(action);
+	}
+
+	public static function bindActionToFunction(actionName:String, instance:Dynamic, functionName:String):Void
+	{
+
 	}
 
 	public static function bindJoyAdded(addFunction:Int->Void):Void
@@ -67,8 +78,7 @@ class MintInput
 
 	public static function unbindAll():Void
 	{
-		for (i in keyMap)
-			_bindMap.set(i, []);
+		_binds = [];
 
 		for (i in -1000...1000)
 			_stateMap.set(i, 0);
@@ -107,44 +117,34 @@ class MintInput
 
 	private static function update(e:Event):Void
 	{
-		for (i in _bindMap)
+		for (key in _binds)
 		{
-			if (i == null)
-				continue;
-
-			for (action in i)
-			{
-				if (action.fireCondition == DOWN && _stateMap.get(action.key) == 1)
-					fire(action);
-				if (action.fireCondition == UP && _stateMap.get(action.key) == 0)
-					fire(action);
-			}
+			if (
+				(key.fireCondition == DOWN && _stateMap.get(key.key) == 1) ||
+				(key.fireCondition == UP && _stateMap.get(key.key) == 0)) fire(key);
 		}
 	}
 
 	private static function handleInput(keyCode:Int, down:Bool):Void
 	{
-		if (_bindMap.get(keyCode) == null) _bindMap.set(keyCode, []);
-
 		var justDown:Bool = _stateMap.get(keyCode) == 0 && down;
 		var justUp:Bool = _stateMap.get(keyCode) == 1 && !down;
 
-		var actions:Array<MintInputAction> = _bindMap.get(keyCode);
-
-		for (i in actions)
+		for (key in _binds)
 		{
-			if (i.fireCondition == DOWN_ONCE && justDown)
-					fire(i);
-			if (i.fireCondition == UP_ONCE && justUp)
-					fire(i);
+			if (
+				key.key == keyCode && (
+					(key.fireCondition == DOWN_ONCE && justDown) ||
+					(key.fireCondition == UP_ONCE && justUp))) fire(key);
 		}
 
 		_stateMap.set(keyCode, down ? 1 : 0);
 	}
 
-	private static function fire(action:MintInputAction):Void
+	private static function fire(key:MintKey):Void
 	{
-		Reflect.callMethod(action.instance, Reflect.field(action.instance, action.property), action.arguments);
+		if (key.mintFunction != null) key.mintFunction.call(key.arguments);
+
 	}
 
 	private static var keyMap:Map<String, Int> =

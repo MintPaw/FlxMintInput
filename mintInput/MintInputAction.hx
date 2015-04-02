@@ -9,6 +9,8 @@ class MintInputAction
 	public var arguments:Array<Dynamic>;
 	public var fireCondition:Int;
 
+	public var actionName:String;
+
 	public function new()
 	{
 
